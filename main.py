@@ -436,9 +436,10 @@ def controller_underground(session, idx):
             # Если нет то все отлично!
             is_in_underground = result['isInUnderground']
             url_to_leave = result['urlToLeave']
-            if is_in_underground and url_to_leave:
+            if is_in_underground:
+                print('Попытка свалить')
                 url_got = url + str(url_to_leave)
-                print('Вошли в подпол по ссылке: ', url_got)
+                print('Вышли из подпола по ссылке: ', url_got)
                 session.get(url_got)
         time.sleep(5)
 
@@ -537,7 +538,7 @@ def check_underground(session):
                 result_data = {
                     **result_data,
                     'isInUnderground': True,
-                    'urlToEnter': url_got
+                    'urlToLeave': url_got
                 }
                 return result_data
 
