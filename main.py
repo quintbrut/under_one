@@ -149,8 +149,6 @@ def first_fighter(session, account_id):
                     time.sleep(0.4)
                     rival = session.get(url + '/index.php?r=fights/choose&club=official')
                     soup = bs(rival.content, "lxml")
-                    print(soup)
-                    input()
                     fight_back = soup.find('div', class_='fight-back')
                     fight_stats = fight_back.find_all('div', class_='fight-stat')
                     esila = int(fight_stats[0].text.strip())
