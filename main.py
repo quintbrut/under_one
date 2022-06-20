@@ -400,7 +400,7 @@ def make_session_light(account_id):
 def get_current_hour():
     current_time = datetime.now(timezone)
     hour = current_time.hour
-    print(hour)
+    print('hour is', hour)
     return hour
 
 
