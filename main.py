@@ -407,6 +407,10 @@ def get_current_hour():
 def get_is_allow_to_underground():
     hour = get_current_hour()
     allowed_hours = [13, 14, 19, 20, 23, 0]
+    deep_sleep_hours = [1,2,3,4,5,6,7,8,9,10,11]
+    if hour in deep_sleep_hours:
+        print('I will sleep 3600 sec')
+        time.sleep(3600)
     if hour in allowed_hours:
         return True
     else:
