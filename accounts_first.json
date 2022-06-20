@@ -1,0 +1,25 @@
+{
+    "data": [
+        {
+            "account_id": "27641012",
+            "login_data": {
+                "password": "22rafaelka23",
+                "username": "парадный59"
+            }
+        },
+        {
+            "account_id": "27643975",
+            "login_data": {
+                "password": "22rafaelka23",
+                "username": "KatyaOsipova"
+            }
+        },
+        {
+            "account_id": "27644529",
+            "login_data": {
+                "password": "22rafaelka23",
+                "username": "Khadysalva"
+            }
+        }
+    ]
+}
