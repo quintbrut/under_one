@@ -142,7 +142,8 @@ def first_fighter(session, account_id):
 
     def run_fighter(session):
         while True:
-            if account_id in allowed_accounts_ids and get_is_allow_to_underground():
+            isAllow = get_is_allow_to_underground()
+            if account_id in allowed_accounts_ids and isAllow:
                 time.sleep(0.4)
                 try:
                     nik_list = ['_minor', '_middle', '_danger']
@@ -286,7 +287,8 @@ def second_fighter(session, account_id):
                 print(e)
 
     while True:
-        if account_id in allowed_accounts_ids and get_is_allow_to_underground():
+        isAllow = get_is_allow_to_underground()
+        if account_id in allowed_accounts_ids and isAllow:
             fight(session)
         else:
             print('Нельзя ничего делать без разрешения', account_id)
@@ -407,7 +409,9 @@ def get_is_allow_to_underground():
     allowed_hours = [13, 14, 19, 20, 23, 0]
     if hour in allowed_hours:
         return True
-    return False
+    else:
+        print('Не подпольское время')
+        return False
 
 
 def controller_underground(session, idx):
