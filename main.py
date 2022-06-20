@@ -142,7 +142,7 @@ def first_fighter(session, account_id):
 
     def run_fighter(session):
         while True:
-            if account_id in allowed_accounts_ids:
+            if account_id in allowed_accounts_ids and get_is_allow_to_underground():
                 time.sleep(0.4)
                 try:
                     nik_list = ['_minor', '_middle', '_danger']
@@ -286,7 +286,7 @@ def second_fighter(session, account_id):
                 print(e)
 
     while True:
-        if account_id in allowed_accounts_ids:
+        if account_id in allowed_accounts_ids and get_is_allow_to_underground():
             fight(session)
         else:
             print('Нельзя ничего делать без разрешения', account_id)
