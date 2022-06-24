@@ -407,7 +407,7 @@ def get_current_hour():
 def get_is_allow_to_underground():
     hour = get_current_hour()
     allowed_hours = [13, 14, 19, 20, 23, 0]
-    deep_sleep_hours = [1,2,3,4,5,6,7,8,9,10,11]
+    deep_sleep_hours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     if hour in deep_sleep_hours:
         print('I will sleep 3600 sec')
         time.sleep(3600)
@@ -551,6 +551,23 @@ def check_underground(session):
                 return result_data
 
 
+async def onoff(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    command = update.message.text
+    text = 'Все аккаунты '
+    on_commands = ['+']
+    off_commands = ['-']
+    if command in on_commands:
+        allowed_accounts_ids.clear()
+        for x in accounts:
+            allowed_accounts_ids.append(x['account_id'])
+        text += 'включены.'
+    if command in off_commands:
+        allowed_accounts_ids.clear()
+        text += 'выключены.'
+
+    await update.message.reply_text(text)
+
+
 def telegram_bot_init():
     async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_html(
@@ -618,6 +635,7 @@ def telegram_bot_init():
     application.add_handler(CommandHandler("list", get_list))
     application.add_handler(CommandHandler('on', on))
     application.add_handler(CommandHandler('off', off))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, onoff))
     application.run_polling()
 
 
