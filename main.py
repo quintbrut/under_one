@@ -551,21 +551,36 @@ def check_underground(session):
                 return result_data
 
 
-async def onoff(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def on_off(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    PLUS = '+'
     command = update.message.text
-    text = 'Все аккаунты '
-    on_commands = ['+']
+    answer_text = '🚀'
+    on_commands = [PLUS]
     off_commands = ['-']
     if command in on_commands:
         allowed_accounts_ids.clear()
         for x in accounts:
             allowed_accounts_ids.append(x['account_id'])
-        text += 'включены.'
+        answer_text += 'Все аккаунты включены.'
     if command in off_commands:
         allowed_accounts_ids.clear()
-        text += 'выключены.'
+        answer_text += 'Все аккаунты выключены.'
 
-    await update.message.reply_text(text)
+    if command[0] == PLUS and len(command) > 1:
+        try:
+            account_numbers = int(command[1])
+            # Включить N значение аккаунтов
+            allowed_accounts_ids.clear()
+            for idx, value in enumerate(accounts):
+                if idx + 1 >= account_numbers:
+                    break
+                else:
+                    allowed_accounts_ids.append(value['account_id'])
+            answer_text += f'{account_numbers} - акк включены в бой.'
+        except Exception as e:
+            answer_text += f'{e}'
+
+    await update.message.reply_text(answer_text)
 
 
 def telegram_bot_init():
@@ -635,7 +650,7 @@ def telegram_bot_init():
     application.add_handler(CommandHandler("list", get_list))
     application.add_handler(CommandHandler('on', on))
     application.add_handler(CommandHandler('off', off))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, onoff))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_off))
     application.run_polling()
 
 
