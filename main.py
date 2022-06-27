@@ -653,16 +653,11 @@ def telegram_bot_init():
     async def off_some_one(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         user = update.message.from_user
         logger.info("User %s started the conversation off_some_one.", user.first_name)
-        keyboard = [
-            [
-
-            ]
-        ]
+        keyboard = []
         for x in accounts:
             nick = get_nick_by_account_id(x['account_id'])
-            keyboard[0].append(InlineKeyboardButton(nick, callback_data=x['account_id']))
-        s = keyboard[0]
-        keyboard[0] = [s[d:d+5] for d in range(0, len(s), 5)]
+            keyboard.append([InlineKeyboardButton(nick, callback_data=x['account_id'])])
+
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text("Выбирай, Кого вырубаем?", reply_markup=reply_markup)
         return START_ROUTES
@@ -686,7 +681,7 @@ def telegram_bot_init():
 
 
 def main():
-    read_accounts()
+    # read_accounts()
     # start_program()
     telegram_bot_init()
 
