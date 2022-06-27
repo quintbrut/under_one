@@ -648,6 +648,7 @@ def telegram_bot_init():
         query = update.callback_query
         await query.answer()
         if query.data == '0':
+            await query.edit_message_text(text="Окей")
             return ConversationHandler.END
         isBanned = ban(query.data)
         if isBanned:
@@ -663,6 +664,7 @@ def telegram_bot_init():
         query = update.callback_query
         await query.answer()
         if query.data == '0':
+            await query.edit_message_text(text="Окей")
             return ConversationHandler.END
         isUnbanned = unban(query.data)
         if isUnbanned:
