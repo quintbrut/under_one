@@ -621,6 +621,7 @@ def telegram_bot_init():
 
     def unban(account_id):
         disallowed_accounts_ids.remove(account_id)
+        allowed_accounts_ids.append(account_id)
         return True
 
     async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -676,6 +677,7 @@ def telegram_bot_init():
     async def off_some_one(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         user = update.message.from_user
         logger.info("User %s started the conversation off_some_one.", user.first_name)
+        await update.message.reply_text("Жди, Смотрю ники...")
         keyboard = []
         for x in accounts:
             nick = get_nick_by_account_id(x['account_id'])
@@ -688,13 +690,14 @@ def telegram_bot_init():
     async def on_some_one(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         user = update.message.from_user
         logger.info("User %s started the conversation off_some_one.", user.first_name)
+        await update.message.reply_text("Жди, Смотрю ники...")
         keyboard = []
         for x in disallowed_accounts_ids:
             nick = get_nick_by_account_id(x)
             keyboard.append([InlineKeyboardButton(nick, callback_data=x)])
         keyboard.append([InlineKeyboardButton('Никого', callback_data='0')])
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text("Выбирай, Кого Рубаем?", reply_markup=reply_markup)
+        await update.message.reply_text("Выбирай, Кого Оживляем?", reply_markup=reply_markup)
         return ROUTES
 
     conversation_handler_off = ConversationHandler(
