@@ -29,7 +29,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 timezone = pytz.timezone('Asia/Almaty')
-START_ROUTES, END_ROUTES = range(2)
+ROUTES, END_ROUTES = range(2)
 accounts = []
 allowed_accounts_ids = []
 disallowed_accounts_ids = []
@@ -619,6 +619,10 @@ def telegram_bot_init():
                 allowed_accounts_ids.append(acc_id)
         return True
 
+    def unban(account_id):
+        disallowed_accounts_ids.remove(account_id)
+        return True
+
     async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         accounts_list = []
         for acc in accounts:
@@ -637,17 +641,34 @@ def telegram_bot_init():
         print(accounts_list_one_string)
         await update.message.reply_text(f"Информация по аккаунтам: \n{accounts_list_one_string}\n")
 
-    async def end(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    async def end_off_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Returns `ConversationHandler.END`, which tells the
         ConversationHandler that the conversation is over.
         """
         query = update.callback_query
         await query.answer()
+        if query.data == 0:
+            return ConversationHandler.END
         isBanned = ban(query.data)
         if isBanned:
             await query.edit_message_text(text=f"Вырубаем {query.data}!")
         else:
             await query.edit_message_text(text=f"Уже вырублен {query.data}!")
+        return ConversationHandler.END
+
+    async def end_on_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        """Returns `ConversationHandler.END`, which tells the
+        ConversationHandler that the conversation is over.
+        """
+        query = update.callback_query
+        await query.answer()
+        if query.data == 0:
+            return ConversationHandler.END
+        isUnbanned = unban(query.data)
+        if isUnbanned:
+            await query.edit_message_text(text=f"Оживляем {query.data}!")
+        else:
+            await query.edit_message_text(text=f"Уже живой {query.data}!")
         return ConversationHandler.END
 
     async def off_some_one(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -657,23 +678,46 @@ def telegram_bot_init():
         for x in accounts:
             nick = get_nick_by_account_id(x['account_id'])
             keyboard.append([InlineKeyboardButton(nick, callback_data=x['account_id'])])
-
+        keyboard.append([InlineKeyboardButton('Никого', callback_data=0)])
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text("Выбирай, Кого вырубаем?", reply_markup=reply_markup)
-        return START_ROUTES
+        return ROUTES
 
-    conversation_handler = ConversationHandler(
+    async def on_some_one(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        user = update.message.from_user
+        logger.info("User %s started the conversation off_some_one.", user.first_name)
+        keyboard = []
+        for x in disallowed_accounts_ids:
+            nick = get_nick_by_account_id(x)
+            keyboard.append([InlineKeyboardButton(nick, callback_data=x)])
+        keyboard.append([InlineKeyboardButton('Никого', callback_data=0)])
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text("Выбирай, Кого Рубаем?", reply_markup=reply_markup)
+        return ROUTES
+
+    conversation_handler_off = ConversationHandler(
         entry_points=[CommandHandler("list", off_some_one)],
         fallbacks=[CommandHandler("list", off_some_one)],
         states={
-            START_ROUTES: [
-                CallbackQueryHandler(end),
+            ROUTES: [
+                CallbackQueryHandler(end_off_conversation),
+            ],
+        },
+    )
+
+    conversation_handler_on = ConversationHandler(
+        entry_points=[CommandHandler("plus", on_some_one)],
+        fallbacks=[CommandHandler("plus", on_some_one)],
+        states={
+            ROUTES: [
+                CallbackQueryHandler(end_on_conversation),
             ],
         },
     )
 
     application = Application.builder().token(TOKEN).build()
-    application.add_handler(conversation_handler)
+    application.add_handler(conversation_handler_off)
+    application.add_handler(conversation_handler_on)
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("info", get_info))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_off))
