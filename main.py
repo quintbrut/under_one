@@ -647,7 +647,7 @@ def telegram_bot_init():
         """
         query = update.callback_query
         await query.answer()
-        if query.data == 0:
+        if query.data == '0':
             return ConversationHandler.END
         isBanned = ban(query.data)
         if isBanned:
@@ -662,7 +662,7 @@ def telegram_bot_init():
         """
         query = update.callback_query
         await query.answer()
-        if query.data == 0:
+        if query.data == '0':
             return ConversationHandler.END
         isUnbanned = unban(query.data)
         if isUnbanned:
@@ -678,7 +678,7 @@ def telegram_bot_init():
         for x in accounts:
             nick = get_nick_by_account_id(x['account_id'])
             keyboard.append([InlineKeyboardButton(nick, callback_data=x['account_id'])])
-        keyboard.append([InlineKeyboardButton('Никого', callback_data=0)])
+        keyboard.append([InlineKeyboardButton('Никого', callback_data='0')])
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text("Выбирай, Кого вырубаем?", reply_markup=reply_markup)
         return ROUTES
@@ -690,7 +690,7 @@ def telegram_bot_init():
         for x in disallowed_accounts_ids:
             nick = get_nick_by_account_id(x)
             keyboard.append([InlineKeyboardButton(nick, callback_data=x)])
-        keyboard.append([InlineKeyboardButton('Никого', callback_data=0)])
+        keyboard.append([InlineKeyboardButton('Никого', callback_data='0')])
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text("Выбирай, Кого Рубаем?", reply_markup=reply_markup)
         return ROUTES
