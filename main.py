@@ -681,8 +681,8 @@ def telegram_bot_init():
 
 
 def main():
-    # read_accounts()
-    # start_program()
+    read_accounts()
+    start_program()
     telegram_bot_init()
 
 
