@@ -4,7 +4,7 @@ import requests, time, json
 from bs4 import BeautifulSoup as bs
 from fake_useragent import UserAgent
 import logging
-from telegram import __version__ as TG_VER
+from telegram import __version__ as TG_VER, InlineKeyboardButton, InlineKeyboardMarkup
 from datetime import datetime
 import pytz
 
@@ -20,7 +20,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
     )
 from telegram import ForceReply, Update
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters, ConversationHandler, \
+    CallbackQueryHandler
 
 TOKEN = '5408622232:AAH9vIF0OX7d9s-z-moGt9f5sDkwmStV9NY'
 logging.basicConfig(
@@ -28,13 +29,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 timezone = pytz.timezone('Asia/Almaty')
-
+START_ROUTES, END_ROUTES = range(2)
 accounts = []
 allowed_accounts_ids = []
+disallowed_accounts_ids = []
 
 url = 'https://pacan.mobi'
 url_lobby = f'{url}/index.php?r=fightclub/lobby'
 url_to_light = f'{url}/index.php?r=site/layout&layout=light&layout=light'
+url_to_profile = f'{url}/index.php?r=profile&layout=mobile'
+
 influence_safety_gap = 1000
 
 
@@ -551,6 +555,17 @@ def check_underground(session):
                 return result_data
 
 
+def get_nick_by_account_id(account_id):
+    user = make_session(account_id)
+    soup = get_soup(user, url_to_profile)
+    nick_raw = soup.find('div', class_='content_profile_title')
+    if nick_raw:
+        nick = nick_raw.get_text().strip().split('ур.')[0]
+        return nick
+    else:
+        return account_id
+
+
 async def on_off(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     PLUS = '+'
     command = update.message.text
@@ -560,8 +575,10 @@ async def on_off(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if command in on_commands:
         allowed_accounts_ids.clear()
         for x in accounts:
-            allowed_accounts_ids.append(x['account_id'])
-        answer_text += 'Все аккаунты включены.'
+            acc_id = x['account_id']
+            if acc_id not in disallowed_accounts_ids:
+                allowed_accounts_ids.append(acc_id)
+        answer_text += 'Все аккаунты [кроме выключенных] включены.'
     if command in off_commands:
         allowed_accounts_ids.clear()
         answer_text += 'Все аккаунты выключены.'
@@ -590,66 +607,77 @@ def telegram_bot_init():
             reply_markup=ForceReply(selective=True),
         )
 
-    async def on(update, context):
-        args = context.args
-        for arg in args:
-            if arg == 'all':
-                allowed_accounts_ids.clear()
-                for x in accounts:
-                    allowed_accounts_ids.append(x['account_id'])
-                await update.message.reply_html(f'Все аккаунты включены',
-                                                reply_markup=ForceReply(selective=True))
-            else:
-                if arg in allowed_accounts_ids:
-                    await update.message.reply_html(f'Аккаунт {arg} и так в бою.',
-                                                    reply_markup=ForceReply(selective=True))
-                else:
-                    allowed_accounts_ids.append(arg)
-                    await update.message.reply_html(f'Аккаунт {arg} включен в бой.',
-                                                    reply_markup=ForceReply(selective=True))
+    def ban(account_id):
+        for x in disallowed_accounts_ids:
+            if x == account_id:
+                return False
+        disallowed_accounts_ids.append(account_id)
+        allowed_accounts_ids.clear()
+        for x in accounts:
+            acc_id = x['account_id']
+            if acc_id not in disallowed_accounts_ids:
+                allowed_accounts_ids.append(acc_id)
+        return True
 
-    async def off(update, context):
-        args = context.args
-        for arg in args:
-            if arg == 'all':
-                allowed_accounts_ids.clear()
-                await update.message.reply_html(f'Все аккаунты выключены',
-                                                reply_markup=ForceReply(selective=True))
-            else:
-
-                if arg not in allowed_accounts_ids:
-                    await update.message.reply_html(f'Аккаунт {arg} и так уже выключен из боя.',
-                                                    reply_markup=ForceReply(selective=True))
-                else:
-                    for idx, val in enumerate(allowed_accounts_ids):
-                        if val == arg:
-                            allowed_accounts_ids.pop(idx)
-                            await update.message.reply_html(f'Аккаунт {arg} выключен из боя.',
-                                                            reply_markup=ForceReply(selective=True))
-
-    async def get_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         accounts_list = []
-        for idx, acc in enumerate(accounts):
+        for acc in accounts:
             acc_id = acc["account_id"]
-            nick = acc["login_data"]["username"]
+            username = acc["login_data"]["username"]
+            badge = ''
             if acc_id in allowed_accounts_ids:
-                command = '/off'
+                badge += '🟢'
             else:
-                command = '/on'
+                badge += '🔴'
+            if acc_id in disallowed_accounts_ids:
+                badge += '☠'
 
-            accounts_list.append(f'[{idx}] {nick} - {command} {acc_id}')
+            accounts_list.append(f'{username} {badge}')
         accounts_list_one_string = '\n'.join(map(str, accounts_list))
         print(accounts_list_one_string)
-        await update.message.reply_html(
-            f"Доступные аккаунты: \n{accounts_list_one_string}\nВключить всех - /on all",
-            reply_markup=ForceReply(selective=True),
-        )
+        await update.message.reply_text(f"Информация по аккаунтам: \n{accounts_list_one_string}\n")
+
+    async def end(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        """Returns `ConversationHandler.END`, which tells the
+        ConversationHandler that the conversation is over.
+        """
+        query = update.callback_query
+        await query.answer()
+        isBanned = ban(query.data)
+        if isBanned:
+            await query.edit_message_text(text=f"Вырубаем {query.data}!")
+        else:
+            await query.edit_message_text(text=f"Уже вырублен {query.data}!")
+        return ConversationHandler.END
+
+    async def off_some_one(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        user = update.message.from_user
+        logger.info("User %s started the conversation off_some_one.", user.first_name)
+        keyboard = [
+            [
+            ]
+        ]
+        for x in accounts:
+            nick = get_nick_by_account_id(x['account_id'])
+            keyboard[0].append(InlineKeyboardButton(nick, callback_data=x['account_id']))
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text("Выбирай, Кого вырубаем?", reply_markup=reply_markup)
+        return START_ROUTES
+
+    conversation_handler = ConversationHandler(
+        entry_points=[CommandHandler("list", off_some_one)],
+        fallbacks=[CommandHandler("list", off_some_one)],
+        states={
+            START_ROUTES: [
+                CallbackQueryHandler(end),
+            ],
+        },
+    )
 
     application = Application.builder().token(TOKEN).build()
+    application.add_handler(conversation_handler)
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("list", get_list))
-    application.add_handler(CommandHandler('on', on))
-    application.add_handler(CommandHandler('off', off))
+    application.add_handler(CommandHandler("info", get_info))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_off))
     application.run_polling()
 
