@@ -588,11 +588,17 @@ async def on_off(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             account_numbers = int(command[1])
             # Включить N значение аккаунтов
             allowed_accounts_ids.clear()
-            for idx, value in enumerate(accounts):
-                if idx + 1 >= account_numbers:
+            available_account_ids = []
+            for value in accounts:
+                if value['account_id'] not in disallowed_accounts_ids:
+                    available_account_ids.append(value['account_id'])
+
+            for idx, value in enumerate(available_account_ids):
+                if idx+1 > account_numbers:
                     break
                 else:
-                    allowed_accounts_ids.append(value['account_id'])
+                    allowed_accounts_ids.append(value)
+
             answer_text += f'{account_numbers} - акк включены в бой.'
         except Exception as e:
             answer_text += f'{e}'
@@ -637,7 +643,7 @@ def telegram_bot_init():
             if acc_id in disallowed_accounts_ids:
                 badge += '☠'
 
-            accounts_list.append(f'{username} {badge}')
+            accounts_list.append(f'{username} {badge} {acc_id}')
         accounts_list_one_string = '\n'.join(map(str, accounts_list))
         print(accounts_list_one_string)
         await update.message.reply_text(f"Информация по аккаунтам: \n{accounts_list_one_string}\n")

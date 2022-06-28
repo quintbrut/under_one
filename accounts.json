@@ -1,34 +1,6 @@
 {
     "data": [
         {
-            "account_id": "27644789",
-            "login_data": {
-                "password": "22rafaelka23",
-                "username": "Maturbinka"
-            }
-        },
-        {
-            "account_id": "27645165",
-            "login_data": {
-                "password": "22rafaelka23",
-                "username": "Доставалка"
-            }
-        },
-        {
-            "account_id": "27643049",
-            "login_data": {
-                "password": "22rafaelka23",
-                "username": "Руслана71"
-            }
-        },
-        {
-            "account_id": "27645800",
-            "login_data": {
-                "password": "22rafaelka23",
-                "username": "отломалкин"
-            }
-        },
-        {
             "account_id": "27646262",
             "login_data": {
                 "password": "22rafaelka23",
@@ -54,13 +26,6 @@
             "login_data": {
                 "password": "22rafaelka23",
                 "username": "глатышева"
-            }
-        },
-        {
-            "account_id": "27639978",
-            "login_data": {
-                "password": "22rafaelka23",
-                "username": "GayTavwer"
             }
         }
 
