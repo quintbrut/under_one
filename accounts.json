@@ -13,33 +13,23 @@
                 "username": "adaptive"
             }
         },{
-            "account_id": "27638936",
+            "account_id": "27854375",
             "login_data": {
                 "password": "22rafaelka23",
-                "username": "Иван Худой"
+                "username": "Огнеслав7"
             }
-        },
-        {
-            "account_id": "27642757",
+        },{
+            "account_id": "28060833",
             "login_data": {
                 "password": "22rafaelka23",
-                "username": "Мардж Симпа"
+                "username": "DockerRun"
             }
-        },
-        {
-            "account_id": "27639126",
+        },{
+            "account_id": "27639338",
             "login_data": {
                 "password": "22rafaelka23",
-                "username": "Серый Зэк"
-            }
-        },
-        {
-            "account_id": "27639243",
-            "login_data": {
-                "password": "22rafaelka23",
-                "username": "Вуда Мастер"
+                "username": "Трегубец91"
             }
         }
-
     ]
 }
